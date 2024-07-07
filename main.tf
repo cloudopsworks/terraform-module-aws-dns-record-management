@@ -28,7 +28,7 @@ resource "aws_route53_record" "this" {
     content {
       name                   = alias.value.name
       zone_id                = alias.value.zone_id
-      evaluate_target_health = try(alias.evaluate_target_health, null)
+      evaluate_target_health = try(alias.value.evaluate_target_health, null)
     }
   }
   dynamic "cidr_routing_policy" {
