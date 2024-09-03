@@ -34,7 +34,8 @@ variable "private_dns_zone" {
 #   multivalue_answer_routing_policy: "WEIGHTED" | "LATENCY" | "FAILOVER" | "GEOLOCATION" | "MULTIVALUE" | "WEIGHTED" | "LATENCY" | "FAILOVER" | "GEOLOCATION" | "MULTIVALUE"
 #   alias: # Required pointing to an alias
 #     target:
-#       name: "example-lb"
+#       name: "example-lb" # optional
+#       arn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188" # optional
 #       type: lb | elasticbeanstalk | cloudfront | lambda | s3 | api-gateway | step-functions | vpc-endpoint | app-mesh
 #     name: "example.internal.aws.address.com" # Required if not stated a target object
 #     zone_id: "Z1234567890"

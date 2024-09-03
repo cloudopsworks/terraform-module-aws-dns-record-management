@@ -18,5 +18,6 @@ locals {
 
 data "aws_lb" "target" {
   for_each = local.targets_lb
-  name     = each.value.name
+  name     = try(each.value.name, null)
+  arn      = try(each.value.arn, null)
 }
