@@ -6,7 +6,7 @@
 locals {
   targets_lb = {
     for record in var.records : record.name => record.alias.target
-    if lenght(try(record.alias.target, {})) > 0 && try(record.alias.target.type, "") == "lb"
+    if length(try(record.alias.target, {})) > 0 && try(record.alias.target.type, "") == "lb"
   }
   target_alias_lb = {
     for id, lb in local.targets_lb : id => {
