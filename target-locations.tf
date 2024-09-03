@@ -28,17 +28,17 @@ locals {
     }
   }
   # For Cognito
-  cognito_texts = ["cognito", "auth"]
-  target_cognito = {
-    for record in var.records : record.name => record.alias.target
-    if length(try(record.alias.target, {})) > 0 && conains(local.cognito_texts, try(record.alias.target.type, ""))
-  }
-  target_alias_cognito = {
-    for id, cognito in local.target_cognito : id => {
-      name    = data.aws_cognito_user_pool.target[id].domain
-      zone_id = data.aws_cognito_user_pool.target[id].zone_id
-    }
-  }
+  #   cognito_texts = ["cognito", "auth"]
+  #   target_cognito = {
+  #     for record in var.records : record.name => record.alias.target
+  #     if length(try(record.alias.target, {})) > 0 && conains(local.cognito_texts, try(record.alias.target.type, ""))
+  #   }
+  target_alias_cognito = {}
+  #     for id, cognito in local.target_cognito : id => {
+  #       name    = data.aws_cognito_user_pool.target[id].domain
+  #       zone_id = data.aws_cognito_user_pool.target[id].zone_id
+  #     }
+  #   }
 }
 
 # Load Balancer
