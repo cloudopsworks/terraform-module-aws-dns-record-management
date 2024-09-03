@@ -19,7 +19,7 @@ locals {
   apigw_texts = ["apigw", "apigateway", "apim"]
   target_apigw = {
     for record in var.records : record.name => record.alias.target
-    if length(try(record.alias.target, {})) > 0 && conains(local.apigw_texts, try(record.alias.target.type, ""))
+    if length(try(record.alias.target, {})) > 0 && contains(local.apigw_texts, try(record.alias.target.type, ""))
   }
   target_alias_apigw = {
     for id, apigw in local.target_apigw : id => {
@@ -31,7 +31,7 @@ locals {
   #   cognito_texts = ["cognito", "auth"]
   #   target_cognito = {
   #     for record in var.records : record.name => record.alias.target
-  #     if length(try(record.alias.target, {})) > 0 && conains(local.cognito_texts, try(record.alias.target.type, ""))
+  #     if length(try(record.alias.target, {})) > 0 && contains(local.cognito_texts, try(record.alias.target.type, ""))
   #   }
   target_alias_cognito = {}
   #     for id, cognito in local.target_cognito : id => {
