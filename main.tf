@@ -3,6 +3,15 @@
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
+locals {
+  named_alias = {
+    for record in var.records : record.name => {
+      name    = record.alias.name
+      zone_id = record.alias.zone_id
+    } if length(try(record.alias.target, {})) == 0
+  }
+  all_alias = merge(local.target_alias_lb, local.named_alias)
+}
 
 data "aws_route53_zone" "this" {
   name         = var.dns_zone_domain != "" ? var.dns_zone_domain : null
@@ -24,59 +33,59 @@ resource "aws_route53_record" "this" {
   zone_id                          = data.aws_route53_zone.this.zone_id
 
   dynamic "alias" {
-    for_each = try(each.value.alias, [])
+    for_each = length(try(local.all_alias[each.key], {})) > 0 ? [1] : []
     content {
-      name                   = alias.value.name
-      zone_id                = alias.value.zone_id
-      evaluate_target_health = try(alias.value.evaluate_target_health, true)
+      name                   = local.all_alias[each.key].name
+      zone_id                = local.all_alias[each.key].zone_id
+      evaluate_target_health = try(each.value.alias.evaluate_target_health, true)
     }
   }
   dynamic "cidr_routing_policy" {
-    for_each = try(each.value.cidr_routing_policy, [])
+    for_each = length(try(each.value.cidr_routing_policy, {})) > 0 ? [1] : []
     content {
-      collection_id = cidr_routing_policy.value.collection_id
-      location_name = cidr_routing_policy.value.location_name
+      collection_id = each.value.cidr_routing_policy.collection_id
+      location_name = each.value.cidr_routing_policy.location_name
     }
   }
   dynamic "failover_routing_policy" {
-    for_each = try(each.value.failover_routing_policy, [])
+    for_each = length(try(each.value.failover_routing_policy, {})) > 0 ? [1] : []
     content {
-      type = failover_routing_policy.value.type
+      type = each.value.failover_routing_policy.type
     }
   }
   dynamic "geolocation_routing_policy" {
-    for_each = try(each.value.geolocation_routing_policy, [])
+    for_each = length(try(each.value.geolocation_routing_policy, {})) > 0 ? [1] : []
     content {
-      continent   = geolocation_routing_policy.value.continent
-      country     = geolocation_routing_policy.value.country
-      subdivision = geolocation_routing_policy.value.subdivision
+      continent   = each.value.geolocation_routing_policy.continent
+      country     = each.value.geolocation_routing_policy.country
+      subdivision = each.value.geolocation_routing_policy.subdivision
     }
   }
   dynamic "geoproximity_routing_policy" {
-    for_each = try(each.value.geoproximity_routing_policy, [])
+    for_each = length(try(each.value.geoproximity_routing_policy, {})) > 0 ? [1] : []
     content {
-      aws_region = geoproximity_routing_policy.value.aws_region
-      bias       = geoproximity_routing_policy.value.bias
+      aws_region = each.value.geoproximity_routing_policy.aws_region
+      bias       = each.value.geoproximity_routing_policy.bias
       dynamic "coordinates" {
-        for_each = try(geoproximity_routing_policy.value.coordinates, [])
+        for_each = length(try(each.value.geoproximity_routing_policy.coordinates, {})) > 0 ? [1] : []
         content {
-          latitude  = coordinates.value.latitude
-          longitude = coordinates.value.longitude
+          latitude  = each.value.geoproximity_routing_policy.coordinates.latitude
+          longitude = each.value.geoproximity_routing_policy.coordinates.longitude
         }
       }
-      local_zone_group = geoproximity_routing_policy.value.local_zone_group
+      local_zone_group = each.value.geoproximity_routing_policy.local_zone_group
     }
   }
   dynamic "latency_routing_policy" {
-    for_each = try(each.value.latency_routing_policy, [])
+    for_each = length(try(each.value.latency_routing_policy, {})) > 0 ? [1] : []
     content {
-      region = latency_routing_policy.value.region
+      region = each.value.latency_routing_policy.region
     }
   }
   dynamic "weighted_routing_policy" {
-    for_each = try(each.value.weighted_routing_policy, [])
+    for_each = length(try(each.value.weighted_routing_policy, [])) > 0 ? [1] : []
     content {
-      weight = weighted_routing_policy.value.weight
+      weight = each.value.weighted_routing_policy.weight
     }
   }
   records = try(each.value.records, null)
