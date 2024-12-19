@@ -1,4 +1,4 @@
-name: Terraform Transit Gateway Module
+name: Terraform AWS DNS Record Management Module for Terragrunt
 #logo: logo/logo.jpg
 
 license: "APACHE2"
@@ -8,20 +8,97 @@ copyrights:
     url: "https://cloudops.works"
     year: "2024"
 
-github_repo: cloudopsworks/terraform-module-aws-vpc-setup
+github_repo: cloudopsworks/terraform-module-aws-dns-record-management
 
 description: |-
-  VPC Module for setting up transit gateway with ResourceAccessMananger support.
+  Module to manage DNS records in AWS Route 53.
 
 # Introduction to the project
 #introduction: |-
 #  This is an introduction.
 
 # How to use this project
-#usage: |-
-
+usage: |-
+  #### Records Format in YAML:
+  ```yaml
+  records:
+    name: "example.internal"
+    type: A | CNAME | AAAA | MX | NS | PTR | SOA | SPF | SRV | TXT
+    ttl: 300 # Required if not alias
+    set_identifier: "example-set" # Required if multivalue_answer_routing_policy is not null
+    health_check_id: "example-health-check" # Required if not alias
+    allow_overwrite: true # enable true to overwrite existing record
+    multivalue_answer_routing_policy: "WEIGHTED" | "LATENCY" | "FAILOVER" | "GEOLOCATION" | "MULTIVALUE" | "WEIGHTED" | "LATENCY" | "FAILOVER" | "GEOLOCATION" | "MULTIVALUE"
+    alias: # Required pointing to an alias
+      target:
+        name: "example-lb" # optional
+        arn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188" # optional
+        type: lb | elasticbeanstalk | cloudfront | lambda | s3 | api-gateway | step-functions | vpc-endpoint | app-mesh
+      name: "example.internal.aws.address.com" # Required if not stated a target object
+      zone_id: "Z1234567890"
+      evaluate_target_health: true
+    records: ["ips", "or", "addresses"]
+    cidr_routing_policy:
+      collection_id: "example-collection"
+      location_name: "example-location"
+    failover_routing_policy:
+      type: "PRIMARY" | "SECONDARY"
+    geolocation_routing_policy:
+      continent: "example-continent"
+      country: "example-country"
+      subdivision: "example-subdivision"
+    geoproximity_routing_policy:
+      aws_region: "example-region"
+      bias: 1
+      coordinates:
+        latitude: 1
+        longitude: 1
+    latency_routing_policy:
+      region: "example-region"
+      latency: 1
+    weighted_routing_policy:
+      weight: 1
+  ```
 # Example usage
-#examples: |-
+examples: |-
+  Sample trerragrunt.hcl file:
+  ```hcl
+  locals {
+    local_vars  = yamldecode(file("./inputs.yaml"))
+    spoke_vars  = yamldecode(file(find_in_parent_folders("spoke-inputs.yaml")))
+    env_vars    = yamldecode(file(find_in_parent_folders("env-inputs.yaml")))
+    global_vars = yamldecode(file(find_in_parent_folders("global-inputs.yaml")))
+  
+    local_tags  = jsondecode(file("./local-tags.json"))
+    spoke_tags  = jsondecode(file(find_in_parent_folders("spoke-tags.json")))
+    env_tags    = jsondecode(file(find_in_parent_folders("env-tags.json")))
+    global_tags = jsondecode(file(find_in_parent_folders("global-tags.json")))
+  
+    tags = merge(
+      local.global_tags,
+      local.env_tags,
+      local.spoke_tags,
+      local.local_tags
+    )
+  }
+    
+    include {
+    path = find_in_parent_folders()
+  }
+      
+    terraform {
+    source = "github.com/cloudopsworks/terraform-module-aws-dns-record-management.git//?ref=1.0.0"
+  }
+    
+    inputs = {
+    org              = local.env_vars.org
+    spoke_def        = local.spoke_vars.spoke
+    dns_zone_domain  = local.local_vars.dns_zone_domain
+    private_dns_zone = local.local_vars.private_dns_zone
+    records          = local.local_vars.records
+    extra_tags       = local.tags
+  }
+  ```
 
 # How to get started quickly
 #quickstart: |-
