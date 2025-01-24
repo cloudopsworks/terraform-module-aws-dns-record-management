@@ -90,7 +90,7 @@ examples: |-
   }
       
     terraform {
-    source = "github.com/cloudopsworks/terraform-module-aws-dns-record-management.git//?ref=1.0.0"
+    source = "github.com/cloudopsworks/terraform-module-aws-dns-record-management.git//?ref=1.1.0"
   }
     
     inputs = {
