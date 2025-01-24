@@ -5,7 +5,7 @@
 #
 locals {
   named_alias = {
-    for record in var.records : record.name => {
+    for record in var.records : "${record.name}-${record.type}" => {
       name    = record.alias.name
       zone_id = record.alias.zone_id
     } if length(try(record.alias.target, {})) == 0 && length(try(record.alias, {})) > 0
@@ -21,7 +21,7 @@ data "aws_route53_zone" "this" {
 
 resource "aws_route53_record" "this" {
   for_each = {
-    for record in var.records : record.name => record
+    for record in var.records : "${record.name}-${record.type}" => record
   }
   name                             = each.value.name
   type                             = each.value.type

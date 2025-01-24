@@ -63,20 +63,23 @@ usage: |-
 examples: |-
   Sample trerragrunt.hcl file:
   ```hcl
-  locals {
+    locals {
     local_vars  = yamldecode(file("./inputs.yaml"))
     spoke_vars  = yamldecode(file(find_in_parent_folders("spoke-inputs.yaml")))
+    region_vars = yamldecode(file(find_in_parent_folders("region-inputs.yaml")))
     env_vars    = yamldecode(file(find_in_parent_folders("env-inputs.yaml")))
     global_vars = yamldecode(file(find_in_parent_folders("global-inputs.yaml")))
   
     local_tags  = jsondecode(file("./local-tags.json"))
     spoke_tags  = jsondecode(file(find_in_parent_folders("spoke-tags.json")))
+    region_tags = jsondecode(file(find_in_parent_folders("region-tags.json")))
     env_tags    = jsondecode(file(find_in_parent_folders("env-tags.json")))
     global_tags = jsondecode(file(find_in_parent_folders("global-tags.json")))
   
     tags = merge(
       local.global_tags,
       local.env_tags,
+      local.region_tags,
       local.spoke_tags,
       local.local_tags
     )
