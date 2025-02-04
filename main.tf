@@ -4,8 +4,18 @@
 #            Distributed Under Apache v2.0 License
 #
 locals {
+  mappings_simple = {
+    for record in var.records : "${record.name}-${record.type}" => record
+    if try(record.set_identifier, "") == ""
+  }
+  mappings_with_id = {
+    for record in var.records : "${record.name}-${record.type}-${record.set_identifier}" => record
+    if try(record.set_identifier, "") != ""
+  }
+  all_mappings = merge(local.mappings_simple, local.mappings_with_id)
+
   named_alias = {
-    for record in var.records : "${record.name}-${record.type}" => {
+    for key, record in local.all_mappings : key => {
       name    = record.alias.name
       zone_id = record.alias.zone_id
     } if length(try(record.alias.target, {})) == 0 && length(try(record.alias, {})) > 0
@@ -20,9 +30,7 @@ data "aws_route53_zone" "this" {
 }
 
 resource "aws_route53_record" "this" {
-  for_each = {
-    for record in var.records : "${record.name}-${record.type}" => record
-  }
+  for_each                         = local.all_mappings
   name                             = each.value.name
   type                             = each.value.type
   ttl                              = try(each.value.ttl, null)

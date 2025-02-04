@@ -6,7 +6,7 @@
 locals {
   # For Load Balancer
   targets_lb = {
-    for record in var.records : "${record.name}-${record.type}" => record.alias.target
+    for key, record in local.all_mappings : key => record.alias.target
     if length(try(record.alias.target, {})) > 0 && try(record.alias.target.type, "") == "lb"
   }
   target_alias_lb = {
@@ -18,7 +18,7 @@ locals {
   # For API Gateway
   apigw_texts = ["apigw", "apigateway", "apim"]
   target_apigw = {
-    for record in var.records : "${record.name}-${record.type}" => record.alias.target
+    for key, record in local.all_mappings : key => record.alias.target
     if length(try(record.alias.target, {})) > 0 && contains(local.apigw_texts, try(record.alias.target.type, ""))
   }
   target_alias_apigw = {
