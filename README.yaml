@@ -11,11 +11,53 @@ copyrights:
 github_repo: cloudopsworks/terraform-module-aws-dns-record-management
 
 description: |-
-  Module to manage DNS records in AWS Route 53.
+  Terraform module for managing AWS Route 53 DNS records with comprehensive support for all major DNS record types and advanced routing policies.
+  This module provides complete flexibility in DNS record configuration, supporting:
+  - Standard DNS records (A, CNAME, AAAA, MX, TXT, etc.)
+  - AWS service alias records (ALB, NLB, CloudFront, S3, API Gateway)
+  - Advanced routing policies (weighted, latency-based, geolocation, failover, multivalue)
+  - Health check integration for high availability
+  - Multiple record management in a single configuration
+  - Full Terragrunt integration for multi-environment deployments
+  - Support for both public and private hosted zones
 
 # Introduction to the project
-#introduction: |-
-#  This is an introduction.
+introduction: |-
+  This Terraform module provides a comprehensive solution for managing DNS records in AWS Route 53. It is designed
+  to simplify DNS management across multiple environments while supporting advanced AWS Route 53 features.
+
+  Key Features:
+  - Complete DNS Record Type Support:
+    * Standard records: A, AAAA, CNAME, MX, TXT, NS, PTR, SOA, SPF, SRV
+    * AWS-specific alias records for managed services
+
+  - AWS Service Integration:
+    * Application and Network Load Balancers
+    * CloudFront distributions
+    * API Gateway endpoints
+    * S3 websites
+    * Lambda functions
+    * VPC endpoints
+    * App Mesh virtual services
+
+  - Advanced Routing Policies:
+    * Weighted routing for load distribution
+    * Latency-based routing for performance optimization
+    * Geolocation routing for regional traffic management
+    * Failover routing for high availability
+    * Multi-value answer routing for simple DNS-based load balancing
+    * CIDR-based routing for network-specific responses
+    * Geoproximity routing for location-aware responses
+
+  - Infrastructure as Code Benefits:
+    * Terragrunt integration for environment management
+    * State file organization
+    * Variable inheritance
+    * DRY configurations
+    * Multi-account deployment support
+
+  The module is specifically designed for use with Terragrunt to provide optimal state management
+  and configuration organization across multiple environments and AWS accounts.
 
 # How to use this project
 usage: |-
@@ -104,7 +146,98 @@ examples: |-
   ```
 
 # How to get started quickly
-#quickstart: |-
+quickstart: |-
+  1. Create a new Terragrunt project directory structure:
+     ```
+     my-dns-project/
+     ├── terragrunt.hcl
+     ├── inputs.yaml
+     ├── local-tags.json
+     ├── env-inputs.yaml
+     ├── env-tags.json
+     ├── region-inputs.yaml
+     ├── region-tags.json
+     ├── spoke-inputs.yaml
+     ├── spoke-tags.json
+     ├── global-inputs.yaml
+     └── global-tags.json
+     ```
+
+  2. Configure your inputs.yaml with DNS records:
+     ```yaml
+     dns_zone_domain: "example.com"
+     private_dns_zone: false
+     records:
+       # Simple A record
+       - name: "www"
+         type: "A"
+         ttl: 300
+         records: ["192.0.2.1"]
+
+       # ALB Alias record
+       - name: "app"
+         type: "A"
+         allow_overwrite: true
+         alias:
+           target:
+             name: "my-alb"
+             type: "lb"
+           evaluate_target_health: true
+
+       # Weighted CNAME record
+       - name: "api"
+         type: "CNAME"
+         ttl: 300
+         set_identifier: "primary"
+         weighted_routing_policy:
+           weight: 90
+         records: ["primary-api.example.com"]
+     ```
+
+  3. Create your terragrunt.hcl file with environment structure:
+     ```hcl
+     locals {
+       local_vars  = yamldecode(file("./inputs.yaml"))
+       env_vars    = yamldecode(file(find_in_parent_folders("env-inputs.yaml")))
+       region_vars = yamldecode(file(find_in_parent_folders("region-inputs.yaml")))
+       spoke_vars  = yamldecode(file(find_in_parent_folders("spoke-inputs.yaml")))
+       global_vars = yamldecode(file(find_in_parent_folders("global-inputs.yaml")))
+
+       tags = merge(
+         jsondecode(file("./local-tags.json")),
+         jsondecode(file(find_in_parent_folders("env-tags.json"))),
+         jsondecode(file(find_in_parent_folders("region-tags.json"))),
+         jsondecode(file(find_in_parent_folders("spoke-tags.json"))),
+         jsondecode(file(find_in_parent_folders("global-tags.json")))
+       )
+     }
+
+     include {
+       path = find_in_parent_folders()
+     }
+
+     terraform {
+       source = "github.com/cloudopsworks/terraform-module-aws-dns-record-management.git//?ref=1.1.1"
+     }
+
+     inputs = {
+       org              = local.env_vars.org
+       spoke_def        = local.spoke_vars.spoke
+       dns_zone_domain  = local.local_vars.dns_zone_domain
+       private_dns_zone = local.local_vars.private_dns_zone
+       records          = local.local_vars.records
+       extra_tags       = local.tags
+     }
+     ```
+
+  4. Initialize and apply:
+     ```bash
+     terragrunt init
+     terragrunt plan
+     terragrunt apply
+     ```
+
+  5. Verify your DNS records in AWS Route 53 console
 
 include:
   - "docs/targets.md"
