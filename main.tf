@@ -23,7 +23,13 @@ locals {
       zone_id = record.alias.zone_id
     } if length(try(record.alias.target, {})) == 0 && length(try(record.alias, {})) > 0
   }
-  all_alias = merge(local.target_alias_lb, local.target_alias_apigw, local.target_alias_cognito, local.named_alias)
+  all_alias = merge(
+    local.target_alias_lb,
+    local.target_alias_apigw,
+    local.target_alias_cognito,
+    local.target_alias_cloudfront,
+    local.named_alias
+  )
 }
 
 data "aws_route53_zone" "this" {
