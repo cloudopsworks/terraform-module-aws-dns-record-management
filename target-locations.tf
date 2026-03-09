@@ -42,6 +42,18 @@ locals {
   #       zone_id = data.aws_cognito_user_pool.target[id].zone_id
   #     }
   #   }
+
+  targets_cloudfront = {
+    for key, record in local.all_mappings : key => record.alias.target
+    if length(try(record.alias.target, {})) > 0 && try(record.alias.target.type, "") == "cloudfront"
+  }
+
+  target_alias_cloudfront = {
+    for id, cloudfront in local.targets_cloudfront : id => {
+      name    = data.aws_cloudfront_distribution.target[id].domain_name
+      zone_id = data.aws_cloudfront_distribution.target[id].hosted_zone_id
+    }
+  }
 }
 
 # Load Balancer
@@ -55,4 +67,10 @@ data "aws_lb" "target" {
 data "aws_api_gateway_domain_name" "target" {
   for_each    = local.target_apigw
   domain_name = try(each.value.domain_name, null)
+}
+
+# CloudFront
+data "aws_cloudfront_distribution" "target" {
+  for_each = local.targets_cloudfront
+  id       = try(each.value.id, null)
 }
