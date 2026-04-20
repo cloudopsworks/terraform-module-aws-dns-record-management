@@ -285,11 +285,7 @@ Available targets:
   help                                Help screen
   help/all                            Display help for all targets
   help/short                          This help short screen
-  init/aws                            Initialize the project for a specific cloud provider: AWS
-  init/azurerm                        Initialize the project for a specific cloud provider: Azure RM
-  init/gcp                            Initialize the project for a specific cloud provider: GCP
-  init/github                         Initialize the project for a specific cloud provider: Github Provider
-  init/mongodb                        Initialize the project for a specific cloud provider: MongoDB Atlas Provider
+  init/%                              Initialize the project for a specific cloud provider: %S
   lint                                Lint terraform/opentofu code
   tag                                 Tag the current version
 
@@ -299,7 +295,7 @@ Available targets:
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.4 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.35 |
 
 ## Providers
 
