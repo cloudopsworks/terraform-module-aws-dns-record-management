@@ -12,7 +12,7 @@
 
 # Terraform AWS DNS Record Management Module for Terragrunt
 
-
+ [![Latest Release](https://img.shields.io/github/release/cloudopsworks/terraform-module-aws-dns-record-management.svg?style=for-the-badge)](https://github.com/cloudopsworks/terraform-module-aws-dns-record-management/releases/latest) [![Last Updated](https://img.shields.io/github/last-commit/cloudopsworks/terraform-module-aws-dns-record-management.svg?style=for-the-badge)](https://github.com/cloudopsworks/terraform-module-aws-dns-record-management/commits)
 
 
 Terraform module for managing AWS Route 53 DNS records with comprehensive support for all major DNS record types and advanced routing policies.
@@ -61,14 +61,11 @@ Key Features:
   * Standard records: A, AAAA, CNAME, MX, TXT, NS, PTR, SOA, SPF, SRV
   * AWS-specific alias records for managed services
 
-- AWS Service Integration:
-  * Application and Network Load Balancers
-  * CloudFront distributions
-  * API Gateway endpoints
-  * S3 websites
-  * Lambda functions
-  * VPC endpoints
-  * App Mesh virtual services
+- AWS Service Integration (auto-resolved alias targets):
+  * Application and Network Load Balancers (type: lb)
+  * CloudFront distributions (type: cloudfront)
+  * API Gateway custom domain names (type: apigw / apigateway / apim)
+  * Direct alias records with explicit DNS name and zone_id
 
 - Advanced Routing Policies:
   * Weighted routing for load distribution
@@ -99,42 +96,42 @@ Instead pin to the release tag (e.g. `?ref=vX.Y.Z`) of one of our [latest releas
 #### Records Format in YAML:
 ```yaml
 records:
-  - name: "example.internal"
-    type: A | CNAME | AAAA | MX | NS | PTR | SOA | SPF | SRV | TXT
-    ttl: 300 # Required if not alias
-    set_identifier: "example-set" # Required if multivalue_answer_routing_policy is not null
-    health_check_id: "example-health-check" # Required if not alias
-    allow_overwrite: true # enable true to overwrite existing record
-    multivalue_answer_routing_policy: "WEIGHTED" | "LATENCY" | "FAILOVER" | "GEOLOCATION" | "MULTIVALUE" | "WEIGHTED" | "LATENCY" | "FAILOVER" | "GEOLOCATION" | "MULTIVALUE"
-    alias: # Required pointing to an alias
-      target:
-        name: "example-lb" # optional
-        arn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188" # optional
-        type: lb | elasticbeanstalk | cloudfront | lambda | s3 | api-gateway | step-functions | vpc-endpoint | app-mesh
-      name: "example.internal.aws.address.com" # Required if not stated a target object
-      zone_id: "Z1234567890"
-      evaluate_target_health: true
-    records: ["ips", "or", "addresses"]
-    cidr_routing_policy:
-      collection_id: "example-collection"
-      location_name: "example-location"
-    failover_routing_policy:
-      type: "PRIMARY" | "SECONDARY"
-    geolocation_routing_policy:
-      continent: "example-continent"
-      country: "example-country"
-      subdivision: "example-subdivision"
-    geoproximity_routing_policy:
-      aws_region: "example-region"
-      bias: 1
-      coordinates:
-        latitude: 1
-        longitude: 1
-    latency_routing_policy:
-      region: "example-region"
-      latency: 1
-    weighted_routing_policy:
-      weight: 1
+  - name: "example.internal"           # (Required) DNS record name relative to the zone domain.
+    type: A | CNAME | AAAA | MX | NS | PTR | SOA | SPF | SRV | TXT  # (Required) DNS record type.
+    ttl: 300                           # (Required if not alias) Time-to-live in seconds.
+    set_identifier: "example-set"     # (Optional) Unique identifier; required when using routing policies.
+    health_check_id: "hc-id"          # (Optional) Route 53 health check ID.
+    allow_overwrite: false            # (Optional) Allow overwriting an existing record. Default: false.
+    multivalue_answer_routing_policy: false  # (Optional) Enable multi-value answer routing.
+    alias:                            # (Optional) Alias target; mutually exclusive with records/ttl.
+      target:                         # (Optional) Auto-resolve alias DNS name and zone_id from an AWS resource.
+        name: "example-lb"            # (Optional) AWS resource name for lookup.
+        arn: "arn:aws:..."            # (Optional) AWS resource ARN for lookup.
+        type: lb | cloudfront | apigw | apigateway | apim  # (Optional) Resource type for auto-resolution.
+      name: "example.dns.aws.com"     # (Required if target not set) Fully-qualified alias DNS name.
+      zone_id: "Z1234567890"          # (Required if target not set) Hosted zone ID of the alias target.
+      evaluate_target_health: true    # (Optional) Evaluate alias target health. Default: true.
+    records: ["192.0.2.1"]            # (Optional) List of IP addresses or values (not used with alias).
+    cidr_routing_policy:              # (Optional) CIDR-based routing policy.
+      collection_id: "coll-id"        # (Required) CIDR collection ID.
+      location_name: "loc-name"       # (Required) CIDR location name.
+    failover_routing_policy:          # (Optional) Failover routing policy.
+      type: "PRIMARY" | "SECONDARY"   # (Required) Failover type.
+    geolocation_routing_policy:       # (Optional) Geolocation routing policy.
+      continent: "EU"                 # (Optional) Two-letter continent code.
+      country: "DE"                   # (Optional) Two-letter ISO 3166-1 country code.
+      subdivision: ""                 # (Optional) Subdivision code (e.g., US state).
+    geoproximity_routing_policy:      # (Optional) Geoproximity routing policy.
+      aws_region: "us-east-1"         # (Optional) AWS region for AWS-resource endpoints.
+      bias: 0                         # (Optional) Bias value (-99 to 99).
+      local_zone_group: ""            # (Optional) AWS Local Zone group for local zone endpoints.
+      coordinates:                    # (Optional) Custom geographic coordinates.
+        latitude: 40.7128             # (Required if coordinates set) Latitude in decimal degrees.
+        longitude: -74.0060           # (Required if coordinates set) Longitude in decimal degrees.
+    latency_routing_policy:           # (Optional) Latency-based routing policy.
+      region: "us-east-1"             # (Required) AWS region to route to based on lowest latency.
+    weighted_routing_policy:          # (Optional) Weighted routing policy.
+      weight: 100                     # (Required) Relative weight (0-255).
 ```
 
 ## Quick Start
@@ -285,11 +282,7 @@ Available targets:
   help                                Help screen
   help/all                            Display help for all targets
   help/short                          This help short screen
-  init/aws                            Initialize the project for a specific cloud provider: AWS
-  init/azurerm                        Initialize the project for a specific cloud provider: Azure RM
-  init/gcp                            Initialize the project for a specific cloud provider: GCP
-  init/github                         Initialize the project for a specific cloud provider: Github Provider
-  init/mongodb                        Initialize the project for a specific cloud provider: MongoDB Atlas Provider
+  init/%                              Initialize the project for a specific cloud provider: %S
   lint                                Lint terraform/opentofu code
   tag                                 Tag the current version
 
@@ -299,7 +292,7 @@ Available targets:
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.4 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.35 |
 
 ## Providers
 
@@ -341,7 +334,7 @@ Available targets:
 
 | Name | Description |
 |------|-------------|
-| <a name="output_dns_zone_id"></a> [dns\_zone\_id](#output\_dns\_zone\_id) | n/a |
+| <a name="output_dns_zone_id"></a> [dns\_zone\_id](#output\_dns\_zone\_id) | The Route 53 hosted zone ID resolved by this module. |
 
 
 
