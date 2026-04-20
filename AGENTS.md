@@ -210,6 +210,19 @@ Key rules:
 > Generated documentation must be human-legible; tables are encouraged for clarity.
 
 - **Source file**: Documentation is maintained in `README.yaml`. Inner sections may use Markdown formatting.
+- **Badges**:
+  - If the module has a public repository, include badges for Latest Release and Last Updated, linking to the appropriate GitHub owner/repo.
+  - Locate it between the `name` or `logo` and `license` fields.
+  - Template:
+    ```yaml
+    badges:
+      - name: Latest Release
+        image: https://img.shields.io/github/release/<owner/repo>.svg?style=for-the-badge
+        url: https://github.com/<owner/repo>/releases/latest
+      - name: Last Updated
+        image: https://img.shields.io/github/last-commit/<owner/repo>.svg?style=for-the-badge
+        url: https://github.com/<owner/repo>/commits
+    ```
 - **Inline variable documentation**:
   - Complete inline documentation in `variables-module.tf` (or its renamed equivalent; there may be multiple `variables-*.tf` files).
   - Document each variable attribute in YAML format within the variable declaration block.
