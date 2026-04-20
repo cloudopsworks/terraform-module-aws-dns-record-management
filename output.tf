@@ -8,5 +8,6 @@
 #
 
 output "dns_zone_id" {
-  value = data.aws_route53_zone.this.zone_id
+  description = "The Route 53 hosted zone ID resolved by this module."
+  value       = data.aws_route53_zone.this.zone_id
 }

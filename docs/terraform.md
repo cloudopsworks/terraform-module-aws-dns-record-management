@@ -45,4 +45,4 @@
 
 | Name | Description |
 |------|-------------|
-| <a name="output_dns_zone_id"></a> [dns\_zone\_id](#output\_dns\_zone\_id) | n/a |
+| <a name="output_dns_zone_id"></a> [dns\_zone\_id](#output\_dns\_zone\_id) | The Route 53 hosted zone ID resolved by this module. |

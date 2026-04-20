@@ -20,7 +20,7 @@ records: []           # (Required) List of DNS record objects to create. Default
   #   target:
   #     name: ""                    # (Optional) Name of the AWS resource (e.g., ALB name) used to resolve the alias zone_id and DNS name automatically.
   #     arn: ""                     # (Optional) ARN of the AWS resource when target lookup is needed.
-  #     type: "lb"                  # (Optional) Type of the AWS resource. Valid values: lb, elasticbeanstalk, cloudfront, lambda, s3, api-gateway, step-functions, vpc-endpoint, app-mesh.
+  #     type: "lb"                  # (Optional) Type of the AWS resource. Valid values: lb, cloudfront, apigw, apigateway, apim.
   #   name: ""                      # (Required if target not set) Fully-qualified DNS name of the alias target.
   #   zone_id: ""                   # (Required if target not set) Hosted zone ID of the alias target.
   #   evaluate_target_health: true  # (Optional) Whether Route 53 evaluates the health of the alias target. Default: true.
@@ -40,6 +40,7 @@ records: []           # (Required) List of DNS record objects to create. Default
   # geoproximity_routing_policy:    # (Optional) Geoproximity routing policy.
   #   aws_region: ""                # (Optional) AWS region for AWS-resource endpoints.
   #   bias: 0                       # (Optional) Bias value (-99 to 99) to expand or shrink the geographic region.
+  #   local_zone_group: ""          # (Optional) AWS Local Zone group for local zone endpoints.
   #   coordinates:                  # (Optional) Custom geographic coordinates.
   #     latitude: 0                 # (Required if coordinates set) Latitude in decimal degrees.
   #     longitude: 0                # (Required if coordinates set) Longitude in decimal degrees.
