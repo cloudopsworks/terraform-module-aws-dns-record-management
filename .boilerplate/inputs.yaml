@@ -1,1 +1,53 @@
 # Module configuration
+# DNS Record Management Module Variables
+
+dns_zone_domain: ""   # (Required if dns_zone_id not provided) The DNS zone domain used to look up the hosted zone. Default: ""
+# dns_zone_id: ""     # (Optional) The Route 53 hosted zone ID; use this instead of dns_zone_domain when you already know the zone ID. Default: ""
+# private_dns_zone: false  # (Optional) Set to true when the hosted zone is private (VPC-associated). Default: false
+
+records: []           # (Required) List of DNS record objects to create. Default: []
+  # Each record supports the following attributes:
+  #
+  # - name: "www"                   # (Required) DNS record name (relative to the zone domain).
+  # - type: "A"                     # (Required) DNS record type. Valid values: A, AAAA, CNAME, MX, TXT, NS, PTR, SOA, SPF, SRV.
+  # - ttl: 300                      # (Required if not alias) Time-to-live in seconds.
+  # - set_identifier: "primary"     # (Optional) Unique identifier for records sharing the same name/type; required for routing policies.
+  # - health_check_id: ""           # (Optional) ID of an associated Route 53 health check.
+  # - allow_overwrite: false        # (Optional) Allow overwriting an existing record. Default: false.
+  # - records: []                   # (Optional) List of IP addresses or values for the record (not used with alias).
+  #
+  # alias:                          # (Optional) Alias target configuration (mutually exclusive with records/ttl).
+  #   target:
+  #     name: ""                    # (Optional) Name of the AWS resource (e.g., ALB name) used to resolve the alias zone_id and DNS name automatically.
+  #     arn: ""                     # (Optional) ARN of the AWS resource when target lookup is needed.
+  #     type: "lb"                  # (Optional) Type of the AWS resource. Valid values: lb, elasticbeanstalk, cloudfront, lambda, s3, api-gateway, step-functions, vpc-endpoint, app-mesh.
+  #   name: ""                      # (Required if target not set) Fully-qualified DNS name of the alias target.
+  #   zone_id: ""                   # (Required if target not set) Hosted zone ID of the alias target.
+  #   evaluate_target_health: true  # (Optional) Whether Route 53 evaluates the health of the alias target. Default: true.
+  #
+  # cidr_routing_policy:            # (Optional) CIDR-based routing policy.
+  #   collection_id: ""             # (Required) ID of the CIDR collection.
+  #   location_name: ""             # (Required) Name of the CIDR location.
+  #
+  # failover_routing_policy:        # (Optional) Failover routing policy.
+  #   type: "PRIMARY"               # (Required) Failover type. Valid values: PRIMARY, SECONDARY.
+  #
+  # geolocation_routing_policy:     # (Optional) Geolocation routing policy.
+  #   continent: ""                 # (Optional) Two-letter continent code (e.g., EU, NA).
+  #   country: ""                   # (Optional) Two-letter ISO 3166-1 country code.
+  #   subdivision: ""               # (Optional) Subdivision code (e.g., US state code).
+  #
+  # geoproximity_routing_policy:    # (Optional) Geoproximity routing policy.
+  #   aws_region: ""                # (Optional) AWS region for AWS-resource endpoints.
+  #   bias: 0                       # (Optional) Bias value (-99 to 99) to expand or shrink the geographic region.
+  #   coordinates:                  # (Optional) Custom geographic coordinates.
+  #     latitude: 0                 # (Required if coordinates set) Latitude in decimal degrees.
+  #     longitude: 0                # (Required if coordinates set) Longitude in decimal degrees.
+  #
+  # latency_routing_policy:         # (Optional) Latency-based routing policy.
+  #   region: ""                    # (Required) AWS region to route traffic to based on lowest latency.
+  #
+  # weighted_routing_policy:        # (Optional) Weighted routing policy.
+  #   weight: 0                     # (Required) Relative weight (0–255) for this record set.
+  #
+  # multivalue_answer_routing_policy: false  # (Optional) Enable multi-value answer routing. Default: false.

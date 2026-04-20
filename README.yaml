@@ -6,7 +6,7 @@ license: "APACHE2"
 copyrights:
   - name: "Cloud Ops Works LLC"
     url: "https://cloudops.works"
-    year: "2024"
+    year: "2021"
 
 github_repo: cloudopsworks/terraform-module-aws-dns-record-management
 
