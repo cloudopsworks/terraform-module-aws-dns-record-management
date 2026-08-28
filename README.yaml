@@ -44,6 +44,8 @@ introduction: |-
     * CloudFront distributions (type: cloudfront)
     * API Gateway custom domain names (type: apigw / apigateway / apim)
     * Direct alias records with explicit DNS name and zone_id
+    * Self-zone aliases: point an alias at another name in the same hosted zone by
+      setting `zone_id: "self"`, leaving it null/empty, or omitting it entirely
 
   - Advanced Routing Policies:
     * Weighted routing for load distribution
@@ -82,7 +84,9 @@ usage: |-
           arn: "arn:aws:..."            # (Optional) AWS resource ARN for lookup.
           type: lb | cloudfront | apigw | apigateway | apim  # (Optional) Resource type for auto-resolution.
         name: "example.dns.aws.com"     # (Required if target not set) Fully-qualified alias DNS name.
-        zone_id: "Z1234567890"          # (Required if target not set) Hosted zone ID of the alias target.
+        zone_id: "self"                 # (Optional) Hosted zone ID of the alias target. Use an explicit zone ID, the
+                                        #   literal "self", null/empty, or omit the key to alias within this module's
+                                        #   own hosted zone. Default: "self".
         evaluate_target_health: true    # (Optional) Evaluate alias target health. Default: true.
       records: ["192.0.2.1"]            # (Optional) List of IP addresses or values (not used with alias).
       cidr_routing_policy:              # (Optional) CIDR-based routing policy.
@@ -106,6 +110,55 @@ usage: |-
       weighted_routing_policy:          # (Optional) Weighted routing policy.
         weight: 100                     # (Required) Relative weight (0-255).
   ```
+
+  #### Aliasing Within the Module's Own Zone (self)
+
+  When an alias points at another name inside the same hosted zone this module manages, the alias
+  `zone_id` does not need to be looked up or hardcoded. Resolve it to the module's own zone — the one
+  found from `dns_zone_domain` (or `dns_zone_id`) — in any of these equivalent ways:
+
+  | `alias.zone_id` value | Resolved zone                                    |
+  |-----------------------|--------------------------------------------------|
+  | `"self"`              | This module's hosted zone                        |
+  | `null` (or empty)     | This module's hosted zone                        |
+  | key omitted           | This module's hosted zone                        |
+  | `"Z1234567890"`       | The explicit hosted zone ID given                 |
+
+  ```yaml
+  dns_zone_domain: "example.com"
+  records:
+    # Apex A record pointing to an ALB
+    - name: "example.com"
+      type: "A"
+      alias:
+        target:
+          name: "my-alb"
+          type: "lb"
+
+    # Alias to the apex record above, in the same zone - zone_id resolved as "self"
+    - name: "www"
+      type: "A"
+      alias:
+        name: "example.com"
+        zone_id: "self"
+        evaluate_target_health: false
+
+    # Identical behaviour - zone_id left null
+    - name: "shop"
+      type: "A"
+      alias:
+        name: "example.com"
+        zone_id: null
+
+    # Identical behaviour - zone_id omitted entirely
+    - name: "blog"
+      type: "A"
+      alias:
+        name: "example.com"
+  ```
+
+  > Note: this applies only to alias entries that set `alias.name` directly. When `alias.target` is
+  > used, the DNS name and zone ID are always auto-resolved from the referenced AWS resource.
 # Example usage
 examples: |-
   Sample trerragrunt.hcl file:
@@ -188,6 +241,14 @@ quickstart: |-
              name: "my-alb"
              type: "lb"
            evaluate_target_health: true
+
+       # Alias to another record in this same zone (zone_id resolved to "self")
+       - name: "portal"
+         type: "A"
+         alias:
+           name: "app.example.com"
+           zone_id: "self"
+           evaluate_target_health: false
 
        # Weighted CNAME record
        - name: "api"

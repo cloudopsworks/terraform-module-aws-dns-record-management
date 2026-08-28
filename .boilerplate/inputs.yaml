@@ -22,7 +22,9 @@ records: []           # (Required) List of DNS record objects to create. Default
   #     arn: ""                     # (Optional) ARN of the AWS resource when target lookup is needed.
   #     type: "lb"                  # (Optional) Type of the AWS resource. Valid values: lb, cloudfront, apigw, apigateway, apim.
   #   name: ""                      # (Required if target not set) Fully-qualified DNS name of the alias target.
-  #   zone_id: ""                   # (Required if target not set) Hosted zone ID of the alias target.
+  #   zone_id: "self"               # (Optional) Hosted zone ID of the alias target. Set the literal "self", leave it
+  #                                 #   null/empty, or omit the key to alias to a name inside this module's own hosted
+  #                                 #   zone (the one resolved from dns_zone_domain / dns_zone_id). Default: "self".
   #   evaluate_target_health: true  # (Optional) Whether Route 53 evaluates the health of the alias target. Default: true.
   #
   # cidr_routing_policy:            # (Optional) CIDR-based routing policy.
