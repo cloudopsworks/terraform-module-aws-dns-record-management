@@ -41,7 +41,10 @@ variable "private_dns_zone" {
 #         arn: "arn:aws:..."                  # (Optional) ARN of the AWS resource.
 #         type: lb | apigw | apigateway | apim | cloudfront  # (Optional) Type of AWS resource for auto-resolution.
 #       name: "example.internal.aws.address.com"  # (Required if target not set) Fully-qualified alias DNS name.
-#       zone_id: "Z1234567890"               # (Required if target not set) Hosted zone ID of the alias target.
+#       zone_id: "Z1234567890" | "self" | null  # (Optional) Hosted zone ID of the alias target. Use the literal "self",
+#                                            #   leave it null/empty, or omit the key entirely to alias to a record inside
+#                                            #   this module's own zone (the zone resolved from dns_zone_domain/dns_zone_id).
+#                                            #   Default: "self".
 #       evaluate_target_health: true         # (Optional) Evaluate alias target health. Default: true.
 #     records: ["ips", "or", "addresses"]    # (Optional) List of IP addresses or values (not used with alias).
 #     cidr_routing_policy:                   # (Optional) CIDR-based routing policy.

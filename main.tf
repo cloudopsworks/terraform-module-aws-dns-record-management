@@ -20,7 +20,7 @@ locals {
   named_alias = {
     for key, record in local.all_mappings : key => {
       name    = record.alias.name
-      zone_id = try(record.alias.zone_id, "self")
+      zone_id = coalesce(try(record.alias.zone_id, "self"), "self")
     } if length(try(record.alias.target, {})) == 0 && length(try(record.alias, {})) > 0
   }
   all_alias = merge(
