@@ -20,7 +20,7 @@ locals {
   named_alias = {
     for key, record in local.all_mappings : key => {
       name    = record.alias.name
-      zone_id = record.alias.zone_id
+      zone_id = try(record.alias.zone_id, "self")
     } if length(try(record.alias.target, {})) == 0 && length(try(record.alias, {})) > 0
   }
   all_alias = merge(
@@ -53,7 +53,7 @@ resource "aws_route53_record" "this" {
     for_each = length(try(local.all_alias[each.key], {})) > 0 ? [1] : []
     content {
       name                   = local.all_alias[each.key].name
-      zone_id                = local.all_alias[each.key].zone_id
+      zone_id                = local.all_alias[each.key].zone_id != "self" ? local.all_alias[each.key].zone_id : data.aws_route53_zone.this.zone_id
       evaluate_target_health = try(each.value.alias.evaluate_target_health, true)
     }
   }
